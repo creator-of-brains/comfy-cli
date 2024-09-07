@@ -30,9 +30,9 @@ app = typer.Typer()
 
 @app.command()
 def enable():
-    set_tracking_enabled(True)
-    typer.echo(f"Tracking is now {'enabled'}.")
-    init_tracking(True)
+    set_tracking_enabled(False)
+    typer.echo(f"Tried to start tracking. Setting it to {'disabled'}.")
+    #init_tracking(True)
 
 
 @app.command()
@@ -89,33 +89,35 @@ def prompt_tracking_consent(skip_prompt: bool = False, default_value: bool = Fal
     if skip_prompt:
         init_tracking(default_value)
     else:
-        enable_tracking = ui.prompt_confirm_action("Do you agree to enable tracking to improve the application?", False)
-        init_tracking(enable_tracking)
+        print("I am a dumb UI and I tried blocking an expensive GPU job to ask a stupid tracking question. Tracking perpetually turned off")
+        set_tracking_enabled(False)
 
 
-def init_tracking(enable_tracking: bool):
+def init_tracking(enable_tracking: bool = False):
     """
     Initialize the tracking system by setting the user identifier and tracking enabled status.
     """
     logging.debug(f"Initializing tracking with enable_tracking: {enable_tracking}")
-    config_manager.set(constants.CONFIG_KEY_ENABLE_TRACKING, str(enable_tracking))
-    if not enable_tracking:
-        return
+    logging.debug("Tracking should never be on since the command breaks multi GPU scripts. Passing")
+    pass
+    # config_manager.set(constants.CONFIG_KEY_ENABLE_TRACKING, str(enable_tracking))
+    # if not enable_tracking:
+    #     return
 
-    curr_user_id = config_manager.get(constants.CONFIG_KEY_USER_ID)
-    logging.debug(f'User identifier for tracking user_id found: {curr_user_id}."')
-    if curr_user_id is None:
-        curr_user_id = str(uuid.uuid4())
-        config_manager.set(constants.CONFIG_KEY_USER_ID, curr_user_id)
-        logging.debug(f'Setting user identifier for tracking user_id: {curr_user_id}."')
+    # curr_user_id = config_manager.get(constants.CONFIG_KEY_USER_ID)
+    # logging.debug(f'User identifier for tracking user_id found: {curr_user_id}."')
+    # if curr_user_id is None:
+    #     curr_user_id = str(uuid.uuid4())
+    #     config_manager.set(constants.CONFIG_KEY_USER_ID, curr_user_id)
+    #     logging.debug(f'Setting user identifier for tracking user_id: {curr_user_id}."')
 
-    # Note: only called once when the user interacts with the CLI for the
-    #  first time iff the permission is granted.
-    install_event_triggered = config_manager.get(constants.CONFIG_KEY_INSTALL_EVENT_TRIGGERED)
-    if not install_event_triggered:
-        logging.debug("Tracking install event.")
-        config_manager.set(constants.CONFIG_KEY_INSTALL_EVENT_TRIGGERED, "True")
-        track_event("install")
+    # # Note: only called once when the user interacts with the CLI for the
+    # #  first time iff the permission is granted.
+    # install_event_triggered = config_manager.get(constants.CONFIG_KEY_INSTALL_EVENT_TRIGGERED)
+    # if not install_event_triggered:
+    #     logging.debug("Tracking install event.")
+    #     config_manager.set(constants.CONFIG_KEY_INSTALL_EVENT_TRIGGERED, "True")
+    #     track_event("install")
 
 
 def set_tracking_enabled(enabled: bool):
